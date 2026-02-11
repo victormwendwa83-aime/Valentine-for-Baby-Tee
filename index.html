@@ -132,6 +132,8 @@
             gap: 20px;
             justify-content: center;
             flex-wrap: wrap;
+            position: relative;
+            min-height: 60px;
         }
 
         button {
@@ -143,11 +145,14 @@
             transition: all 0.3s ease;
             font-weight: bold;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 1;
         }
 
         .yes-btn {
             background: linear-gradient(135deg, #ff1744 0%, #ff6b9d 100%);
             color: white;
+            z-index: 100 !important;
         }
 
         .yes-btn:hover {
@@ -158,8 +163,9 @@
         .no-btn {
             background: #e0e0e0;
             color: #666;
-            position: absolute;
+            position: fixed;
             transition: all 0.3s ease;
+            z-index: 1;
         }
 
         .no-btn:hover {
@@ -242,7 +248,7 @@
             </p>
             <div class="buttons">
                 <button class="yes-btn" onclick="sayYes()">Yes! 💕</button>
-                <button class="no-btn" id="noBtn" onmouseover="runAway()" onclick="runAway()">No</button>
+                <button class="no-btn" id="noBtn" ontouchstart="runAway()" onmouseover="runAway()" onclick="runAway()">No</button>
             </div>
         </div>
 
@@ -257,10 +263,14 @@
 
     <script>
         let noBtnClicks = 0;
+        let isRunning = false;
 
         function sayYes() {
             document.getElementById('question').style.display = 'none';
             document.getElementById('celebration').style.display = 'block';
+            
+            // Hide the no button
+            document.getElementById('noBtn').style.display = 'none';
             
             // Create confetti effect
             for (let i = 0; i < 50; i++) {
@@ -269,22 +279,28 @@
         }
 
         function runAway() {
+            if (isRunning) return;
+            isRunning = true;
+            
             const noBtn = document.getElementById('noBtn');
-            const container = document.querySelector('.container');
             
             noBtnClicks++;
             
             // Get viewport dimensions
             const viewportWidth = window.innerWidth;
             const viewportHeight = window.innerHeight;
+            const btnWidth = noBtn.offsetWidth;
+            const btnHeight = noBtn.offsetHeight;
             
             // Generate random position anywhere on the screen
-            const randomX = Math.random() * (viewportWidth - 150);
-            const randomY = Math.random() * (viewportHeight - 60);
+            // Keep it away from edges
+            const randomX = Math.random() * (viewportWidth - btnWidth - 40) + 20;
+            const randomY = Math.random() * (viewportHeight - btnHeight - 40) + 20;
             
             noBtn.style.position = 'fixed';
             noBtn.style.left = randomX + 'px';
             noBtn.style.top = randomY + 'px';
+            noBtn.style.zIndex = '1';
             
             // Make the button text change after a few attempts
             if (noBtnClicks === 3) {
@@ -294,6 +310,10 @@
             } else if (noBtnClicks === 8) {
                 noBtn.textContent = "Please? 💔";
             }
+            
+            setTimeout(() => {
+                isRunning = false;
+            }, 300);
         }
 
         function createConfetti() {
@@ -311,6 +331,17 @@
                 confetti.remove();
             }, 6000);
         }
+        
+        // Position the No button initially
+        window.addEventListener('load', function() {
+            const noBtn = document.getElementById('noBtn');
+            const container = document.querySelector('.container');
+            const containerRect = container.getBoundingClientRect();
+            
+            // Position it to the right of Yes button initially
+            noBtn.style.position = 'relative';
+            noBtn.style.zIndex = '1';
+        });
     </script>
 </body>
 </html>
